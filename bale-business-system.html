@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bale Live Sell — Business System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#FAF6EF;
+    --paper:#FFFFFF;
+    --ink:#2A211C;
+    --ink-soft:#5B5148;
+    --muted:#948A7D;
+    --line:#E7DFD2;
+    --accent:#C2571F;
+    --accent-soft:#F3DCC8;
+    --olive:#5B6E4F;
+    --olive-soft:#E1E7D9;
+    --good:#3F7A4D;
+    --good-soft:#DCEBDD;
+    --bad:#B23A2E;
+    --bad-soft:#F6DEDA;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(42,33,28,.06), 0 6px 20px rgba(42,33,28,.05);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Space Grotesk',sans-serif;
+    letter-spacing:-0.01em;
+  }
+  .mono{font-family:'IBM Plex Mono',monospace;}
+  #app{max-width:1080px;margin:0 auto;padding:18px 16px 60px;}
+
+  /* header */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:38px;height:38px;border-radius:10px;background:var(--ink);
+    display:flex;align-items:center;justify-content:center;color:var(--bg);
+    font-family:'Space Grotesk';font-weight:700;font-size:15px;flex:none;
+    transform:rotate(-4deg);
+  }
+  .brand h1{font-size:19px;margin:0;font-weight:700;}
+  .brand span{display:block;font-size:11.5px;color:var(--muted);font-weight:500;margin-top:1px;}
+
+  /* tabs */
+  .tabs{
+    display:flex;gap:4px;overflow-x:auto;padding-bottom:4px;margin-bottom:18px;
+    border-bottom:1px solid var(--line);
+    -ms-overflow-style:none;scrollbar-width:none;
+  }
+  .tabs::-webkit-scrollbar{display:none;}
+  .tab{
+    flex:none;padding:9px 14px;border-radius:9px 9px 0 0;font-size:13.5px;font-weight:600;
+    color:var(--ink-soft);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;
+    transition:.15s;
+  }
+  .tab:hover{color:var(--ink);}
+  .tab.active{color:var(--accent);border-bottom:2px solid var(--accent);}
+
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .2s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(3px);}to{opacity:1;transform:none;}}
+
+  /* price-tag stat cards */
+  .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px;margin-bottom:16px;}
+  .tag{
+    background:var(--paper);border:1px solid var(--line);border-radius:10px;
+    padding:14px 14px 12px;position:relative;box-shadow:var(--shadow);
+    border-top:2px dashed var(--line);
+  }
+  .tag::before{
+    content:'';position:absolute;top:-6px;left:14px;width:10px;height:10px;
+    background:var(--bg);border:2px solid var(--line);border-radius:50%;
+  }
+  .tag .label{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:600;}
+  .tag .value{font-family:'IBM Plex Mono';font-size:21px;font-weight:600;margin-top:4px;color:var(--ink);}
+  .tag .sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  .tag.pos .value{color:var(--good);}
+  .tag.neg .value{color:var(--bad);}
+  .tag.accent{border-top-color:var(--accent);}
+
+  /* cards / sections */
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);padding:18px;margin-bottom:16px;box-shadow:var(--shadow);}
+  .card h2{font-size:15px;margin:0 0 4px;font-weight:700;}
+  .card .hint{font-size:12px;color:var(--muted);margin:0 0 14px;}
+  .card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:12px;}
+
+  /* forms */
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
+  label{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-bottom:4px;}
+  input,select,textarea{
+    width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;
+    font-family:'Inter';font-size:13.5px;background:#FDFBF8;color:var(--ink);
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);background:#fff;}
+  .field{margin-bottom:0;}
+  .btn{
+    padding:9px 16px;border-radius:8px;border:none;font-weight:600;font-size:13px;cursor:pointer;
+    background:var(--accent);color:#fff;transition:.15s;
+  }
+  .btn:hover{background:#A8481A;}
+  .btn.secondary{background:var(--olive-soft);color:var(--olive);}
+  .btn.secondary:hover{background:#d3ddc7;}
+  .btn.ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);}
+  .btn.ghost:hover{background:var(--bg);}
+  .btn.small{padding:5px 10px;font-size:11.5px;}
+  .btn.danger{background:var(--bad-soft);color:var(--bad);}
+  .btn.danger:hover{background:#f0c9c3;}
+  .form-actions{margin-top:12px;display:flex;gap:8px;}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{
+    text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;
+    color:var(--muted);font-weight:600;padding:8px 8px;border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .table-wrap{overflow-x:auto;}
+  .badge{padding:2px 8px;border-radius:20px;font-size:10.5px;font-weight:700;white-space:nowrap;}
+  .badge.stock{background:var(--olive-soft);color:var(--olive);}
+  .badge.sold{background:var(--muted);color:#fff;opacity:.75;}
+  .row-actions{display:flex;gap:6px;}
+  .empty{text-align:center;padding:30px 10px;color:var(--muted);font-size:13px;}
+  .empty b{display:block;color:var(--ink-soft);font-size:14px;margin-bottom:3px;}
+
+  .progress{height:7px;border-radius:6px;background:var(--bg);border:1px solid var(--line);overflow:hidden;margin-top:6px;}
+  .progress > div{height:100%;background:var(--accent);border-radius:6px;}
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:720px){.two-col{grid-template-columns:1fr;}}
+
+  canvas{max-width:100%;}
+
+  .ai-box{background:var(--olive-soft);border:1px solid #cddabe;border-radius:10px;padding:14px 16px;font-size:13.5px;line-height:1.55;color:#3c4933;white-space:pre-wrap;}
+  .ai-box.loading{color:var(--muted);font-style:italic;}
+  select.ls{max-width:160px;}
+  .pill-select{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;}
+  .pill{padding:5px 12px;border-radius:20px;font-size:12px;font-weight:600;border:1px solid var(--line);cursor:pointer;color:var(--ink-soft);background:var(--paper);}
+  .pill.active{background:var(--ink);color:var(--bg);border-color:var(--ink);}
+
+  /* auth */
+  .auth-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+  .auth-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;width:100%;max-width:360px;}
+  .auth-error{background:var(--bad-soft);color:var(--bad);font-size:12.5px;padding:8px 10px;border-radius:8px;margin-bottom:10px;}
+  .auth-note{background:var(--olive-soft);color:#3c4933;font-size:12.5px;padding:8px 10px;border-radius:8px;margin-bottom:10px;}
+  .user-box{display:flex;align-items:center;gap:10px;font-size:12.5px;color:var(--ink-soft);}
+  .user-box .btn{padding:6px 12px;}
+</style>
+</head>
+<body>
+
+<div id="authScreen" class="auth-screen" style="display:none;">
+  <div class="auth-card">
+    <div class="brand" style="justify-content:center;margin-bottom:18px;">
+      <div class="brand-mark">₱</div>
+      <div>
+        <h1>Bale Live Sell</h1>
+        <span>Sign in to your business data</span>
+      </div>
+    </div>
+    <form id="authForm">
+      <div class="field" style="margin-bottom:10px;"><label>Email</label><input type="email" name="email" required></div>
+      <div class="field" style="margin-bottom:10px;"><label>Password</label><input type="password" name="password" required minlength="6"></div>
+      <div id="authError" class="auth-error" style="display:none;"></div>
+      <div id="authNote" class="auth-note" style="display:none;"></div>
+      <div class="form-actions">
+        <button class="btn" type="submit" id="authSubmitBtn">Sign In</button>
+        <button class="btn ghost" type="button" id="authToggleBtn">Need an account? Sign Up</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark">₱</div>
+      <div>
+        <h1>Bale Live Sell</h1>
+        <span>Inventory · Sales · Payroll · Profit Tracking</span>
+      </div>
+    </div>
+    <div class="user-box" id="userBox"></div>
+  </div>
+
+  <div class="tabs" id="tabs"></div>
+  <div id="panels"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+/* ============ SUPABASE CONFIG ============ */
+const SUPABASE_URL = 'https://zolnnbhlynmwajsgijwq.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvbG5uYmhseW5td2Fqc2dpandxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODU4NTQ2NDcsImV4cCI6MjEwMTQzMDY0N30.ruwtOt4r50OLUq_dhDtnYLGFHALijEyuUiBDazc9GfM';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+/* ============ STATE ============ */
+const KEYS = ['purchases','inventory','sales','salary','expenses','investments'];
+let DB = { purchases:[], inventory:[], sales:[], salary:[], expenses:[], investments:[] };
+let TARGETS = { dailyNetProfit:2000, monthlyNetProfit:50000, annualNetProfit:600000, targetMarkupPercent:120, avgItemsPerDay:15 };
+let CURRENT_USER = null;
+
+const PHP = n => '₱' + (Number(n)||0).toLocaleString('en-PH',{minimumFractionDigits:2,maximumFractionDigits:2});
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const todayStr = () => new Date().toISOString().slice(0,10);
+const fmtDate = d => new Date(d+'T00:00:00').toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'});
+
+/* ---- snake_case <-> camelCase row mapping ---- */
+const toCamel = s => s.replace(/_([a-z0-9])/g, (_,c)=>c.toUpperCase());
+const toSnake = s => s.replace(/[A-Z]/g, c=>'_'+c.toLowerCase());
+const rowToCamel = row => { const o={}; for(const k in row) o[toCamel(k)] = row[k]; return o; };
+const objToSnake = obj => { const o={}; for(const k in obj) o[toSnake(k)] = obj[k]; return o; };
+
+/* ============ DATA LOAD / SAVE (Supabase) ============ */
+async function loadAll(){
+  for(const k of KEYS){
+    const { data, error } = await supabaseClient.from(k).select('*').order('date', { ascending:false });
+    if(error){ console.error('load failed', k, error); DB[k] = []; continue; }
+    DB[k] = (data||[]).map(rowToCamel);
+  }
+  const { data: trow, error: tErr } = await supabaseClient.from('targets').select('*').maybeSingle();
+  if(!tErr && trow){
+    TARGETS = rowToCamel(trow);
+  } else {
+    await supabaseClient.from('targets').insert(objToSnake(TARGETS));
+  }
+}
+async function saveTargets(){
+  const { error } = await supabaseClient.from('targets').upsert(objToSnake(TARGETS), { onConflict:'user_id' });
+  if(error) console.error('save targets failed', error);
+}
+
+/* ============ TABS ============ */
+const TABS = [
+  {id:'dashboard', label:'Dashboard'},
+  {id:'purchases', label:'Purchases'},
+  {id:'inventory', label:'Inventory'},
+  {id:'sales', label:'Sales'},
+  {id:'salary', label:'Salary'},
+  {id:'expenses', label:'Expenses'},
+  {id:'investment', label:'Investment'},
+  {id:'targets', label:'Targets'},
+  {id:'advisor', label:'AI Pricing Advisor'},
+];
+let ACTIVE = 'dashboard';
+
+function renderTabs(){
+  const el = document.getElementById('tabs');
+  el.innerHTML = TABS.map(t=>`<div class="tab ${t.id===ACTIVE?'active':''}" data-tab="${t.id}">${t.label}</div>`).join('');
+  el.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{ACTIVE=t.dataset.tab; renderAll();}));
+}
+
+/* ============ CALCULATIONS ============ */
+function inRange(dateStr, start, end){ return dateStr >= start && dateStr <= end; }
+function monthStart(d=new Date()){ return new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10); }
+function yearStart(d=new Date()){ return new Date(d.getFullYear(), 0, 1).toISOString().slice(0,10); }
+
+function periodStats(start,end){
+  const sales = DB.sales.filter(s=>inRange(s.date,start,end));
+  const revenue = sales.reduce((a,s)=>a+Number(s.price)*Number(s.quantity),0);
+  const cogs = sales.reduce((a,s)=>a+Number(s.cost)*Number(s.quantity),0);
+  const salaryTotal = DB.salary.filter(s=>inRange(s.date,start,end)).reduce((a,s)=>a+Number(s.amount),0);
+  const expenseTotal = DB.expenses.filter(s=>inRange(s.date,start,end)).reduce((a,s)=>a+Number(s.amount),0);
+  const netProfit = revenue - cogs - salaryTotal - expenseTotal;
+  const itemsSold = sales.reduce((a,s)=>a+Number(s.quantity),0);
+  return {revenue,cogs,salaryTotal,expenseTotal,netProfit,itemsSold};
+}
+
+function dashboardData(){
+  const today = todayStr();
+  const mStart = monthStart(), yStart = yearStart();
+  const dayStats = periodStats(today,today);
+  const monthStats = periodStats(mStart, today);
+  const yearStats = periodStats(yStart, today);
+
+  const now = new Date();
+  const daysElapsedMonth = now.getDate();
+  const daysInMonth = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+  const dayOfYear = Math.ceil((now - new Date(now.getFullYear(),0,0))/86400000);
+  const isLeap = (now.getFullYear()%4===0 && now.getFullYear()%100!==0)||now.getFullYear()%400===0;
+  const daysInYear = isLeap?366:365;
+
+  const projectedMonth = daysElapsedMonth>0 ? (monthStats.netProfit/daysElapsedMonth)*daysInMonth : 0;
+  const projectedYear = dayOfYear>0 ? (yearStats.netProfit/dayOfYear)*daysInYear : 0;
+
+  return {today,dayStats,monthStats,yearStats,projectedMonth,projectedYear,daysElapsedMonth,daysInMonth,dayOfYear,daysInYear};
+}
+
+/* ============ RENDER: DASHBOARD ============ */
+function renderDashboard(){
+  const d = dashboardData();
+  const pct = (v,t) => t>0 ? Math.min(100, Math.max(0,(v/t)*100)) : 0;
+
+  const last14 = [];
+  for(let i=13;i>=0;i--){
+    const dt = new Date(); dt.setDate(dt.getDate()-i);
+    const ds = dt.toISOString().slice(0,10);
+    last14.push({date:ds, ...periodStats(ds,ds)});
+  }
+  const recentSales = [...DB.sales].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+
+  return `
+  <div class="stat-row">
+    <div class="tag accent ${d.dayStats.netProfit>=0?'pos':'neg'}">
+      <div class="label">Today's Net Profit</div>
+      <div class="value">${PHP(d.dayStats.netProfit)}</div>
+      <div class="sub">Target ${PHP(TARGETS.dailyNetProfit)}</div>
+      <div class="progress"><div style="width:${pct(d.dayStats.netProfit,TARGETS.dailyNetProfit)}%"></div></div>
+    </div>
+    <div class="tag ${d.monthStats.netProfit>=0?'pos':'neg'}">
+      <div class="label">This Month</div>
+      <div class="value">${PHP(d.monthStats.netProfit)}</div>
+      <div class="sub">Target ${PHP(TARGETS.monthlyNetProfit)}</div>
+      <div class="progress"><div style="width:${pct(d.monthStats.netProfit,TARGETS.monthlyNetProfit)}%"></div></div>
+    </div>
+    <div class="tag ${d.yearStats.netProfit>=0?'pos':'neg'}">
+      <div class="label">This Year</div>
+      <div class="value">${PHP(d.yearStats.netProfit)}</div>
+      <div class="sub">Target ${PHP(TARGETS.annualNetProfit)}</div>
+      <div class="progress"><div style="width:${pct(d.yearStats.netProfit,TARGETS.annualNetProfit)}%"></div></div>
+    </div>
+    <div class="tag">
+      <div class="label">Projected Month-End</div>
+      <div class="value">${PHP(d.projectedMonth)}</div>
+      <div class="sub">based on day ${d.daysElapsedMonth}/${d.daysInMonth} pace</div>
+    </div>
+    <div class="tag">
+      <div class="label">Projected Year-End</div>
+      <div class="value">${PHP(d.projectedYear)}</div>
+      <div class="sub">based on day ${d.dayOfYear}/${d.daysInYear} pace</div>
+    </div>
+    <div class="tag">
+      <div class="label">Items Sold (Month)</div>
+      <div class="value">${d.monthStats.itemsSold}</div>
+      <div class="sub">${PHP(d.monthStats.itemsSold?d.monthStats.revenue/d.monthStats.itemsSold:0)} avg price</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="card">
+      <h2>Last 14 Days — Net Profit</h2>
+      <p class="hint">Daily trend used for month/year projections.</p>
+      <canvas id="trendChart" height="180"></canvas>
+    </div>
+    <div class="card">
+      <h2>Recent Sales</h2>
+      <p class="hint">Latest live-sell transactions.</p>
+      ${recentSales.length===0 ? `<div class="empty"><b>No sales yet</b>Log a sale to see it here.</div>` :
+      `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Item</th><th>Seller</th><th>Qty</th><th>Price</th><th>Profit</th></tr></thead><tbody>
+        ${recentSales.map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${s.itemName}</td><td>${s.liveSeller||'—'}</td><td class="mono">${s.quantity}</td><td class="mono">${PHP(s.price*s.quantity)}</td><td class="mono" style="color:${(s.price-s.cost)>=0?'var(--good)':'var(--bad)'}">${PHP((s.price-s.cost)*s.quantity)}</td></tr>`).join('')}
+      </tbody></table></div>`}
+    </div>
+  </div>
+  `;
+}
+
+function drawTrendChart(){
+  const canvas = document.getElementById('trendChart');
+  if(!canvas || typeof Chart==='undefined') return;
+  const last14 = [];
+  for(let i=13;i>=0;i--){
+    const dt = new Date(); dt.setDate(dt.getDate()-i);
+    const ds = dt.toISOString().slice(0,10);
+    last14.push({date:ds, ...periodStats(ds,ds)});
+  }
+  if(window._trendChart) window._trendChart.destroy();
+  window._trendChart = new Chart(canvas, {
+    type:'bar',
+    data:{
+      labels: last14.map(x=>new Date(x.date+'T00:00:00').toLocaleDateString('en-PH',{day:'numeric',month:'short'})),
+      datasets:[{
+        data: last14.map(x=>x.netProfit),
+        backgroundColor: last14.map(x=>x.netProfit>=0 ? '#C2571F' : '#B23A2E'),
+        borderRadius:4,
+        maxBarThickness:22,
+      }]
+    },
+    options:{
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{grid:{color:'#EEE6D8'},ticks:{font:{family:'IBM Plex Mono',size:10}}},
+        x:{grid:{display:false},ticks:{font:{size:10}}}
+      }
+    }
+  });
+}
+
+/* ============ RENDER: PURCHASES ============ */
+function renderPurchases(){
+  const rows = [...DB.purchases].sort((a,b)=>b.date.localeCompare(a.date));
+  return `
+  <div class="card">
+    <h2>Log a Bale Purchase</h2>
+    <p class="hint">Enter the bale batch cost and estimated total piece count — this creates ONE inventory batch with that quantity, priced using your target markup. Need to split it into categories (e.g. dresses vs. blouses) after sorting? Use "Add Batch" on the Inventory tab and link it to this purchase.</p>
+    <form id="purchaseForm" class="grid">
+      <div class="field"><label>Date</label><input type="date" name="date" value="${todayStr()}" required></div>
+      <div class="field"><label>Supplier</label><input type="text" name="supplier" placeholder="e.g. Ukay Supplier - Divisoria" required></div>
+      <div class="field"><label>Description</label><input type="text" name="description" placeholder="e.g. Mixed dresses bale, Korean grade A"></div>
+      <div class="field"><label>Total Cost (₱)</label><input type="number" name="totalCost" min="0" step="0.01" required></div>
+      <div class="field"><label>Total Quantity (pcs)</label><input type="number" name="pieceCount" min="1" step="1" required></div>
+      <div class="field"><label>Markup % for auto-pricing</label><input type="number" name="markup" value="${TARGETS.targetMarkupPercent}" min="0" step="1"></div>
+      <div class="form-actions" style="align-self:end;"><button class="btn" type="submit">Add Purchase &amp; Create Batch</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Purchase History</h2></div>
+    ${rows.length===0 ? `<div class="empty"><b>No purchases logged</b>Add your first bale batch above.</div>` : `
+    <div class="table-wrap"><table><thead><tr><th>Date</th><th>Supplier</th><th>Description</th><th>Total Cost</th><th>Qty</th><th>Cost/Unit</th><th></th></tr></thead><tbody>
+    ${rows.map(p=>`<tr>
+      <td>${fmtDate(p.date)}</td><td>${p.supplier}</td><td>${p.description||'—'}</td>
+      <td class="mono">${PHP(p.totalCost)}</td><td class="mono">${p.pieceCount}</td>
+      <td class="mono">${PHP(p.totalCost/p.pieceCount)}</td>
+      <td class="row-actions"><button class="btn danger small" data-del-purchase="${p.id}">Delete</button></td>
+    </tr>`).join('')}
+    </tbody></table></div>`}
+  </div>
+  `;
+}
+
+/* ============ RENDER: INVENTORY ============ */
+let INV_FILTER = 'all';
+function renderInventory(){
+  let rows = [...DB.inventory].sort((a,b)=>b.dateAdded.localeCompare(a.dateAdded));
+  if(INV_FILTER==='stock') rows = rows.filter(i=>i.quantityAvailable>0);
+  if(INV_FILTER==='sold') rows = rows.filter(i=>i.quantityAvailable===0);
+  const inStockCount = DB.inventory.reduce((a,i)=>a+Number(i.quantityAvailable),0);
+  const inStockValue = DB.inventory.reduce((a,i)=>a+Number(i.quantityAvailable)*Number(i.price),0);
+  const inStockCost = DB.inventory.reduce((a,i)=>a+Number(i.quantityAvailable)*Number(i.cost),0);
+  const purchaseOptions = [...DB.purchases].sort((a,b)=>b.date.localeCompare(a.date));
+
+  return `
+  <div class="stat-row">
+    <div class="tag"><div class="label">Pieces In Stock</div><div class="value">${inStockCount}</div></div>
+    <div class="tag"><div class="label">Stock Cost Value</div><div class="value">${PHP(inStockCost)}</div></div>
+    <div class="tag"><div class="label">Stock Selling Value</div><div class="value">${PHP(inStockValue)}</div></div>
+  </div>
+  <div class="card">
+    <h2>Add Batch</h2>
+    <p class="hint">For batches not covered by the auto-created purchase batch — e.g. splitting a sorted bale into categories like dresses vs. blouses. Optionally link it to a purchase for reference.</p>
+    <form id="itemForm" class="grid">
+      <div class="field"><label>Batch Name / Category</label><input type="text" name="name" placeholder="e.g. Floral midi dresses" required></div>
+      <div class="field"><label>Category</label><input type="text" name="category" placeholder="e.g. Dress, Blouse, Jacket"></div>
+      <div class="field"><label>Quantity</label><input type="number" name="quantity" min="1" step="1" value="1" required></div>
+      <div class="field"><label>Cost / Unit (₱)</label><input type="number" name="cost" min="0" step="0.01" required></div>
+      <div class="field"><label>Selling Price / Unit (₱)</label><input type="number" name="price" min="0" step="0.01" required></div>
+      <div class="field"><label>Link to Purchase (optional)</label>
+        <select name="purchaseId"><option value="">— None —</option>${purchaseOptions.map(p=>`<option value="${p.id}">${fmtDate(p.date)} — ${p.supplier}${p.description?' ('+p.description+')':''}</option>`).join('')}</select>
+      </div>
+      <div class="form-actions" style="align-self:end;"><button class="btn secondary" type="submit">Add Batch</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-head">
+      <h2>Inventory</h2>
+      <div class="pill-select">
+        <div class="pill ${INV_FILTER==='all'?'active':''}" data-filter="all">All</div>
+        <div class="pill ${INV_FILTER==='stock'?'active':''}" data-filter="stock">In Stock</div>
+        <div class="pill ${INV_FILTER==='sold'?'active':''}" data-filter="sold">Sold Out</div>
+      </div>
+    </div>
+    ${rows.length===0 ? `<div class="empty"><b>No batches</b>Add a purchase batch or an item manually.</div>` : `
+    <div class="table-wrap"><table><thead><tr><th>Batch</th><th>Category</th><th>Qty Left</th><th>Cost/Unit</th><th>Price/Unit</th><th>Markup</th><th>Status</th><th></th></tr></thead><tbody>
+    ${rows.map(i=>`<tr>
+      <td>${i.name}</td><td>${i.category||'—'}</td>
+      <td class="mono">${i.quantityAvailable} / ${i.quantityReceived}</td>
+      <td class="mono">${PHP(i.cost)}</td><td class="mono">${PHP(i.price)}</td>
+      <td class="mono">${i.cost>0?Math.round(((i.price-i.cost)/i.cost)*100):0}%</td>
+      <td><span class="badge ${i.quantityAvailable>0?'stock':'sold'}">${i.quantityAvailable>0?'In Stock':'Sold Out'}</span></td>
+      <td class="row-actions">
+        ${i.quantityAvailable>0?`<button class="btn small" data-sell-item="${i.id}">Sell</button>`:''}
+        <button class="btn ghost small" data-del-item="${i.id}">Delete</button>
+      </td>
+    </tr>`).join('')}
+    </tbody></table></div>`}
+  </div>
+  `;
+}
+
+/* ============ RENDER: SALES ============ */
+function renderSales(){
+  const rows = [...DB.sales].sort((a,b)=>b.date.localeCompare(a.date));
+  const inStock = DB.inventory.filter(i=>i.quantityAvailable>0);
+  const sellers = [...new Set(DB.salary.map(s=>s.liveSeller).concat(DB.sales.map(s=>s.liveSeller)).filter(Boolean))];
+
+  return `
+  <div class="card">
+    <h2>Log a Sale</h2>
+    <p class="hint">Pick a batch (auto-fills cost/price, caps quantity to what's left) or enter a manual sale.</p>
+    <form id="saleForm" class="grid">
+      <div class="field"><label>Date</label><input type="date" name="date" value="${todayStr()}" required></div>
+      <div class="field" style="grid-column:span 2;">
+        <label>Batch</label>
+        <select name="itemId" id="itemPicker">
+          <option value="">— Manual entry —</option>
+          ${inStock.map(i=>`<option value="${i.id}" data-cost="${i.cost}" data-price="${i.price}" data-name="${i.name}" data-max="${i.quantityAvailable}">${i.name} — ${i.quantityAvailable} left (cost ${PHP(i.cost)} / price ${PHP(i.price)})</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Item Name (if manual)</label><input type="text" name="itemName" placeholder="e.g. Denim jacket"></div>
+      <div class="field"><label>Quantity Sold</label><input type="number" name="quantity" id="saleQty" min="1" step="1" value="1" required></div>
+      <div class="field"><label>Cost / Unit (₱)</label><input type="number" name="cost" min="0" step="0.01" required></div>
+      <div class="field"><label>Sale Price / Unit (₱)</label><input type="number" name="price" min="0" step="0.01" required></div>
+      <div class="field"><label>Live Seller</label><input type="text" name="liveSeller" list="sellerList" placeholder="e.g. Ana"><datalist id="sellerList">${sellers.map(s=>`<option value="${s}">`).join('')}</datalist></div>
+      <div class="field"><label>Platform</label><input type="text" name="platform" value="TikTok Live"></div>
+      <div class="field"><label>Buyer (optional)</label><input type="text" name="buyer"></div>
+      <div class="form-actions" style="align-self:end;"><button class="btn" type="submit">Log Sale</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Sales History</h2></div>
+    ${rows.length===0 ? `<div class="empty"><b>No sales yet</b>Log your first live-sell transaction above.</div>` : `
+    <div class="table-wrap"><table><thead><tr><th>Date</th><th>Item</th><th>Seller</th><th>Qty</th><th>Cost</th><th>Price</th><th>Profit</th><th></th></tr></thead><tbody>
+    ${rows.map(s=>`<tr>
+      <td>${fmtDate(s.date)}</td><td>${s.itemName}</td><td>${s.liveSeller||'—'}</td>
+      <td class="mono">${s.quantity}</td>
+      <td class="mono">${PHP(s.cost*s.quantity)}</td><td class="mono">${PHP(s.price*s.quantity)}</td>
+      <td class="mono" style="color:${(s.price-s.cost)>=0?'var(--good)':'var(--bad)'}">${PHP((s.price-s.cost)*s.quantity)}</td>
+      <td class="row-actions"><button class="btn danger small" data-del-sale="${s.id}">Delete</button></td>
+    </tr>`).join('')}
+    </tbody></table></div>`}
+  </div>
+  `;
+}
+
+/* ============ RENDER: SALARY ============ */
+function renderSalary(){
+  const rows = [...DB.salary].sort((a,b)=>b.date.localeCompare(a.date));
+  const byPerson = {};
+  DB.salary.forEach(s=>{ byPerson[s.liveSeller] = (byPerson[s.liveSeller]||0) + Number(s.amount); });
+  return `
+  <div class="card">
+    <h2>Log Salary / Payout</h2>
+    <p class="hint">Track fixed pay, per-live rate, or commission for live sellers and staff.</p>
+    <form id="salaryForm" class="grid">
+      <div class="field"><label>Date</label><input type="date" name="date" value="${todayStr()}" required></div>
+      <div class="field"><label>Name</label><input type="text" name="liveSeller" required placeholder="e.g. Ana"></div>
+      <div class="field"><label>Type</label>
+        <select name="type"><option>Fixed</option><option>Per Live Session</option><option>Commission</option><option>Bonus</option></select>
+      </div>
+      <div class="field"><label>Amount (₱)</label><input type="number" name="amount" min="0" step="0.01" required></div>
+      <div class="field" style="grid-column:span 2;"><label>Notes</label><input type="text" name="notes"></div>
+      <div class="form-actions" style="align-self:end;"><button class="btn secondary" type="submit">Log Payout</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <h2>Total Paid by Person</h2>
+    ${Object.keys(byPerson).length===0?`<div class="empty">No payouts logged yet.</div>`:
+    `<div class="stat-row">${Object.entries(byPerson).map(([n,v])=>`<div class="tag"><div class="label">${n}</div><div class="value">${PHP(v)}</div></div>`).join('')}</div>`}
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Payout History</h2></div>
+    ${rows.length===0?`<div class="empty"><b>No entries</b></div>`:
+    `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Name</th><th>Type</th><th>Amount</th><th>Notes</th><th></th></tr></thead><tbody>
+    ${rows.map(s=>`<tr><td>${fmtDate(s.date)}</td><td>${s.liveSeller}</td><td>${s.type}</td><td class="mono">${PHP(s.amount)}</td><td>${s.notes||'—'}</td>
+      <td><button class="btn danger small" data-del-salary="${s.id}">Delete</button></td></tr>`).join('')}
+    </tbody></table></div>`}
+  </div>
+  `;
+}
+
+/* ============ RENDER: EXPENSES ============ */
+function renderExpenses(){
+  const rows = [...DB.expenses].sort((a,b)=>b.date.localeCompare(a.date));
+  return `
+  <div class="card">
+    <h2>Log an Expense</h2>
+    <form id="expenseForm" class="grid">
+      <div class="field"><label>Date</label><input type="date" name="date" value="${todayStr()}" required></div>
+      <div class="field"><label>Category</label>
+        <select name="category"><option>Shipping</option><option>Packaging</option><option>Ads / Promotion</option><option>Platform Fees</option><option>Rent</option><option>Utilities</option><option>Transport</option><option>Other</option></select>
+      </div>
+      <div class="field"><label>Amount (₱)</label><input type="number" name="amount" min="0" step="0.01" required></div>
+      <div class="field" style="grid-column:span 2;"><label>Notes</label><input type="text" name="notes"></div>
+      <div class="form-actions" style="align-self:end;"><button class="btn secondary" type="submit">Log Expense</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Expense History</h2></div>
+    ${rows.length===0?`<div class="empty"><b>No expenses logged</b></div>`:
+    `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Category</th><th>Amount</th><th>Notes</th><th></th></tr></thead><tbody>
+    ${rows.map(e=>`<tr><td>${fmtDate(e.date)}</td><td>${e.category}</td><td class="mono">${PHP(e.amount)}</td><td>${e.notes||'—'}</td>
+      <td><button class="btn danger small" data-del-expense="${e.id}">Delete</button></td></tr>`).join('')}
+    </tbody></table></div>`}
+  </div>
+  `;
+}
+
+/* ============ RENDER: INVESTMENT ============ */
+function renderInvestment(){
+  const rows = [...DB.investments].sort((a,b)=>b.date.localeCompare(a.date));
+  const totalIn = DB.investments.filter(i=>i.type==='Capital In').reduce((a,i)=>a+Number(i.amount),0);
+  const totalOut = DB.investments.filter(i=>i.type!=='Capital In').reduce((a,i)=>a+Number(i.amount),0);
+  const totalNetProfit = periodStats('2000-01-01', todayStr()).netProfit;
+  return `
+  <div class="stat-row">
+    <div class="tag"><div class="label">Total Capital In</div><div class="value">${PHP(totalIn)}</div></div>
+    <div class="tag"><div class="label">Total Drawn / Out</div><div class="value">${PHP(totalOut)}</div></div>
+    <div class="tag ${totalNetProfit>=0?'pos':'neg'}"><div class="label">Lifetime Net Profit</div><div class="value">${PHP(totalNetProfit)}</div></div>
+  </div>
+  <div class="card">
+    <h2>Log Investment / Capital Movement</h2>
+    <form id="investForm" class="grid">
+      <div class="field"><label>Date</label><input type="date" name="date" value="${todayStr()}" required></div>
+      <div class="field"><label>Type</label><select name="type"><option>Capital In</option><option>Owner Draw</option><option>Capital Out</option></select></div>
+      <div class="field"><label>Amount (₱)</label><input type="number" name="amount" min="0" step="0.01" required></div>
+      <div class="field"><label>Source / Reason</label><input type="text" name="source" placeholder="e.g. Owner top-up"></div>
+      <div class="field" style="grid-column:span 2;"><label>Notes</label><input type="text" name="notes"></div>
+      <div class="form-actions" style="align-self:end;"><button class="btn secondary" type="submit">Log Entry</button></div>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-head"><h2>Investment History</h2></div>
+    ${rows.length===0?`<div class="empty"><b>No entries</b></div>`:
+    `<div class="table-wrap"><table><thead><tr><th>Date</th><th>Type</th><th>Amount</th><th>Source</th><th>Notes</th><th></th></tr></thead><tbody>
+    ${rows.map(i=>`<tr><td>${fmtDate(i.date)}</td><td>${i.type}</td><td class="mono">${PHP(i.amount)}</td><td>${i.source||'—'}</td><td>${i.notes||'—'}</td>
+      <td><button class="btn danger small" data-del-invest="${i.id}">Delete</button></td></tr>`).join('')}
+    </tbody></table></div>`}
+  </div>
+  `;
+}
+
+/* ============ RENDER: TARGETS ============ */
+function renderTargets(){
+  return `
+  <div class="card">
+    <h2>Net Profit Targets</h2>
+    <p class="hint">These drive the progress bars on your Dashboard and the AI pricing suggestions below.</p>
+    <form id="targetsForm" class="grid">
+      <div class="field"><label>Daily Net Profit Target (₱)</label><input type="number" name="dailyNetProfit" value="${TARGETS.dailyNetProfit}" min="0" step="1"></div>
+      <div class="field"><label>Monthly Net Profit Target (₱)</label><input type="number" name="monthlyNetProfit" value="${TARGETS.monthlyNetProfit}" min="0" step="1"></div>
+      <div class="field"><label>Annual Net Profit Target (₱)</label><input type="number" name="annualNetProfit" value="${TARGETS.annualNetProfit}" min="0" step="1"></div>
+      <div class="field"><label>Default Markup % (for auto-pricing new stock)</label><input type="number" name="targetMarkupPercent" value="${TARGETS.targetMarkupPercent}" min="0" step="1"></div>
+      <div class="field"><label>Expected Items Sold / Day</label><input type="number" name="avgItemsPerDay" value="${TARGETS.avgItemsPerDay}" min="1" step="1"></div>
+      <div class="form-actions" style="align-self:end;"><button class="btn" type="submit">Save Targets</button></div>
+    </form>
+  </div>
+  `;
+}
+
+/* ============ RENDER: AI ADVISOR ============ */
+function computeAdvisorStats(){
+  const start30 = new Date(); start30.setDate(start30.getDate()-30);
+  const start30s = start30.toISOString().slice(0,10);
+  const s30 = periodStats(start30s, todayStr());
+  const soldItems = DB.sales.reduce((a,s)=>a+Number(s.quantity),0);
+  const avgCost = soldItems? DB.sales.reduce((a,s)=>a+Number(s.cost)*Number(s.quantity),0)/soldItems : (DB.inventory.length? DB.inventory.reduce((a,i)=>a+Number(i.cost),0)/DB.inventory.length : 0);
+  const avgPrice = soldItems? DB.sales.reduce((a,s)=>a+Number(s.price)*Number(s.quantity),0)/soldItems : 0;
+  const avgMarkup = avgCost>0 ? ((avgPrice-avgCost)/avgCost)*100 : 0;
+  const days30 = Math.max(1, Math.min(30, (new Date()-start30)/86400000));
+  const dailySalaryRate = s30.salaryTotal/days30;
+  const dailyExpenseRate = s30.expenseTotal/days30;
+  const itemsPerDay = TARGETS.avgItemsPerDay || Math.max(1, s30.itemsSold/days30);
+
+  // required avg price per item to hit each target
+  const reqDaily = avgCost + (TARGETS.dailyNetProfit + dailySalaryRate + dailyExpenseRate)/itemsPerDay;
+  const reqMonthly = avgCost + (TARGETS.monthlyNetProfit + dailySalaryRate*30 + dailyExpenseRate*30)/(itemsPerDay*30);
+  const reqAnnual = avgCost + (TARGETS.annualNetProfit + dailySalaryRate*365 + dailyExpenseRate*365)/(itemsPerDay*365);
+
+  return {avgCost,avgPrice,avgMarkup,dailySalaryRate,dailyExpenseRate,itemsPerDay,reqDaily,reqMonthly,reqAnnual,s30};
+}
+
+function renderAdvisor(){
+  const st = computeAdvisorStats();
+  const reqMarkup = st.avgCost>0 ? ((st.reqDaily-st.avgCost)/st.avgCost)*100 : 0;
+  return `
+  <div class="stat-row">
+    <div class="tag"><div class="label">Avg Cost / Item</div><div class="value">${PHP(st.avgCost)}</div></div>
+    <div class="tag"><div class="label">Avg Selling Price</div><div class="value">${PHP(st.avgPrice)}</div></div>
+    <div class="tag"><div class="label">Current Avg Markup</div><div class="value">${st.avgMarkup.toFixed(0)}%</div></div>
+    <div class="tag"><div class="label">Items / Day (used)</div><div class="value">${st.itemsPerDay.toFixed(1)}</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Required Pricing to Hit Targets</h2>
+    <p class="hint">Formula: cost/item + (target net profit + salary run-rate + expense run-rate) ÷ expected items sold, for each period.</p>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Period</th><th>Target Net Profit</th><th>Required Avg Sale Price</th><th>Required Markup</th></tr></thead>
+      <tbody>
+        <tr><td>Daily</td><td class="mono">${PHP(TARGETS.dailyNetProfit)}</td><td class="mono">${PHP(st.reqDaily)}</td><td class="mono">${(st.avgCost>0?((st.reqDaily-st.avgCost)/st.avgCost)*100:0).toFixed(0)}%</td></tr>
+        <tr><td>Monthly</td><td class="mono">${PHP(TARGETS.monthlyNetProfit)}</td><td class="mono">${PHP(st.reqMonthly)}</td><td class="mono">${(st.avgCost>0?((st.reqMonthly-st.avgCost)/st.avgCost)*100:0).toFixed(0)}%</td></tr>
+        <tr><td>Annual</td><td class="mono">${PHP(TARGETS.annualNetProfit)}</td><td class="mono">${PHP(st.reqAnnual)}</td><td class="mono">${(st.avgCost>0?((st.reqAnnual-st.avgCost)/st.avgCost)*100:0).toFixed(0)}%</td></tr>
+      </tbody>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div><h2>Ask Claude for a Pricing Strategy</h2><p class="hint" style="margin:0;">Sends your current numbers to Claude for a written recommendation — item-level price bands, live-selling tactics, and markup adjustments.</p></div>
+      <button class="btn" id="askAiBtn">Get AI Suggestion</button>
+    </div>
+    <div id="aiResult" class="ai-box" style="display:none;"></div>
+  </div>
+  `;
+}
+
+async function askAI(){
+  const btn = document.getElementById('askAiBtn');
+  const box = document.getElementById('aiResult');
+  const st = computeAdvisorStats();
+  box.style.display='block';
+  box.classList.add('loading');
+  box.textContent = 'Thinking through your pricing...';
+  btn.disabled = true;
+
+  const payload = {
+    avgCostPerItem: Number(st.avgCost.toFixed(2)),
+    avgSellingPrice: Number(st.avgPrice.toFixed(2)),
+    currentAvgMarkupPercent: Number(st.avgMarkup.toFixed(1)),
+    expectedItemsPerDay: Number(st.itemsPerDay.toFixed(1)),
+    dailySalaryRunRate: Number(st.dailySalaryRate.toFixed(2)),
+    dailyExpenseRunRate: Number(st.dailyExpenseRate.toFixed(2)),
+    targets: TARGETS,
+    requiredAvgPriceDaily: Number(st.reqDaily.toFixed(2)),
+    requiredAvgPriceMonthly: Number(st.reqMonthly.toFixed(2)),
+    requiredAvgPriceAnnual: Number(st.reqAnnual.toFixed(2)),
+    itemsInStock: DB.inventory.reduce((a,i)=>a+Number(i.quantityAvailable),0),
+    last30DaysRevenue: Number(st.s30.revenue.toFixed(2)),
+    last30DaysNetProfit: Number(st.s30.netProfit.toFixed(2)),
+  };
+
+  try{
+    const response = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 1000,
+        messages: [{
+          role: "user",
+          content: `You are a pricing consultant for a small bale (secondhand/thrift bundle) dress reselling business that sells via TikTok Live. Here is their current data as JSON:\n\n${JSON.stringify(payload,null,2)}\n\nGive concise, practical pricing guidance: 1) whether current pricing supports their targets, 2) a suggested price band strategy for their live sessions (e.g. entry-price hooks vs premium pieces) to hit the required average price, 3) 2-3 concrete tactics specific to TikTok live-selling (bundles, flash pricing, scarcity) to lift average price or volume without alienating buyers. Keep it under 220 words, plain text, no markdown headers.`
+        }]
+      })
+    });
+    const data = await response.json();
+    const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n').trim();
+    box.classList.remove('loading');
+    box.textContent = text || 'No suggestion returned — try again.';
+  }catch(err){
+    box.classList.remove('loading');
+    box.textContent = 'Could not reach the AI advisor right now. The formula-based required prices above are still accurate — try again in a moment.';
+  }
+  btn.disabled = false;
+}
+
+/* ============ MAIN RENDER ============ */
+function renderAll(){
+  renderTabs();
+  const panels = document.getElementById('panels');
+  let html = '';
+  if(ACTIVE==='dashboard') html = renderDashboard();
+  else if(ACTIVE==='purchases') html = renderPurchases();
+  else if(ACTIVE==='inventory') html = renderInventory();
+  else if(ACTIVE==='sales') html = renderSales();
+  else if(ACTIVE==='salary') html = renderSalary();
+  else if(ACTIVE==='expenses') html = renderExpenses();
+  else if(ACTIVE==='investment') html = renderInvestment();
+  else if(ACTIVE==='targets') html = renderTargets();
+  else if(ACTIVE==='advisor') html = renderAdvisor();
+  panels.innerHTML = `<div class="panel active">${html}</div>`;
+  attachHandlers();
+  if(ACTIVE==='dashboard') drawTrendChart();
+}
+
+/* ============ HANDLERS ============ */
+function attachHandlers(){
+  // Purchases
+  const pForm = document.getElementById('purchaseForm');
+  if(pForm) pForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const f = new FormData(pForm);
+    const totalCost = Number(f.get('totalCost')), pieceCount = Number(f.get('pieceCount')), markup = Number(f.get('markup'))||0;
+    const { data: purchase, error } = await supabaseClient.from('purchases').insert({
+      date:f.get('date'), supplier:f.get('supplier'), description:f.get('description'),
+      total_cost:totalCost, piece_count:pieceCount
+    }).select().single();
+    if(error){ alert('Could not save purchase: '+error.message); return; }
+    const costEach = totalCost/pieceCount;
+    const { error: invErr } = await supabaseClient.from('inventory').insert({
+      purchase_id:purchase.id, name:f.get('description')||'Bale batch', category:'',
+      cost:Number(costEach.toFixed(2)), price:Number((costEach*(1+markup/100)).toFixed(2)),
+      quantity_received:pieceCount, quantity_available:pieceCount, date_added:f.get('date')
+    });
+    if(invErr) alert('Purchase saved but inventory batch failed: '+invErr.message);
+    await loadAll(); renderAll();
+  });
+  document.querySelectorAll('[data-del-purchase]').forEach(b=>b.addEventListener('click', async ()=>{
+    const { error } = await supabaseClient.from('purchases').delete().eq('id', b.dataset.delPurchase);
+    if(error){ alert('Could not delete purchase: '+error.message); return; }
+    await loadAll(); renderAll();
+  }));
+
+  // Inventory
+  const iForm = document.getElementById('itemForm');
+  if(iForm) iForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const f = new FormData(iForm);
+    const qty = Number(f.get('quantity'))||1;
+    const { error } = await supabaseClient.from('inventory').insert({
+      purchase_id:f.get('purchaseId')||null, name:f.get('name'), category:f.get('category'),
+      cost:Number(f.get('cost')), price:Number(f.get('price')),
+      quantity_received:qty, quantity_available:qty, date_added:todayStr()
+    });
+    if(error){ alert('Could not add batch: '+error.message); return; }
+    await loadAll(); renderAll();
+  });
+  document.querySelectorAll('[data-filter]').forEach(p=>p.addEventListener('click', ()=>{ INV_FILTER = p.dataset.filter; renderAll(); }));
+  document.querySelectorAll('[data-del-item]').forEach(b=>b.addEventListener('click', async ()=>{
+    const { error } = await supabaseClient.from('inventory').delete().eq('id', b.dataset.delItem);
+    if(error){ alert('Could not delete item: '+error.message); return; }
+    await loadAll(); renderAll();
+  }));
+  document.querySelectorAll('[data-sell-item]').forEach(b=>b.addEventListener('click', ()=>{
+    ACTIVE='sales'; renderAll();
+    setTimeout(()=>{
+      const picker = document.getElementById('itemPicker');
+      if(picker){ picker.value = b.dataset.sellItem; picker.dispatchEvent(new Event('change')); }
+    }, 30);
+  }));
+
+  // Sales
+  const sForm = document.getElementById('saleForm');
+  const itemPicker = document.getElementById('itemPicker');
+  if(itemPicker) itemPicker.addEventListener('change', ()=>{
+    const opt = itemPicker.selectedOptions[0];
+    const qtyInput = document.getElementById('saleQty');
+    if(opt && opt.value){
+      sForm.cost.value = opt.dataset.cost;
+      sForm.price.value = opt.dataset.price;
+      sForm.itemName.value = opt.dataset.name;
+      qtyInput.max = opt.dataset.max;
+      if(Number(qtyInput.value) > Number(opt.dataset.max)) qtyInput.value = opt.dataset.max;
+    } else {
+      qtyInput.removeAttribute('max');
+    }
+  });
+  if(sForm) sForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const f = new FormData(sForm);
+    const itemId = f.get('itemId') || null;
+    const quantity = Number(f.get('quantity'))||1;
+    let itemName = f.get('itemName');
+    let inv = null;
+    if(itemId){
+      inv = DB.inventory.find(i=>i.id===itemId);
+      if(inv) itemName = inv.name;
+      if(inv && quantity > inv.quantityAvailable){
+        alert(`Only ${inv.quantityAvailable} left in that batch.`);
+        return;
+      }
+    }
+    if(!itemName) itemName = 'Item';
+    const { error } = await supabaseClient.from('sales').insert({
+      item_id:itemId, date:f.get('date'), item_name:itemName, quantity,
+      cost:Number(f.get('cost')), price:Number(f.get('price')),
+      live_seller:f.get('liveSeller'), platform:f.get('platform'), buyer:f.get('buyer')
+    });
+    if(error){ alert('Could not log sale: '+error.message); return; }
+    if(itemId && inv){
+      const { error: updErr } = await supabaseClient.from('inventory')
+        .update({ quantity_available: inv.quantityAvailable - quantity }).eq('id', itemId);
+      if(updErr) console.error('inventory quantity update failed', updErr);
+    }
+    await loadAll(); renderAll();
+  });
+  document.querySelectorAll('[data-del-sale]').forEach(b=>b.addEventListener('click', async ()=>{
+    const { error } = await supabaseClient.from('sales').delete().eq('id', b.dataset.delSale);
+    if(error){ alert('Could not delete sale: '+error.message); return; }
+    await loadAll(); renderAll();
+  }));
+
+  // Salary
+  const salForm = document.getElementById('salaryForm');
+  if(salForm) salForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const f = new FormData(salForm);
+    const { error } = await supabaseClient.from('salary').insert({
+      date:f.get('date'), live_seller:f.get('liveSeller'), type:f.get('type'),
+      amount:Number(f.get('amount')), notes:f.get('notes')
+    });
+    if(error){ alert('Could not log payout: '+error.message); return; }
+    await loadAll(); renderAll();
+  });
+  document.querySelectorAll('[data-del-salary]').forEach(b=>b.addEventListener('click', async ()=>{
+    const { error } = await supabaseClient.from('salary').delete().eq('id', b.dataset.delSalary);
+    if(error){ alert('Could not delete entry: '+error.message); return; }
+    await loadAll(); renderAll();
+  }));
+
+  // Expenses
+  const expForm = document.getElementById('expenseForm');
+  if(expForm) expForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const f = new FormData(expForm);
+    const { error } = await supabaseClient.from('expenses').insert({
+      date:f.get('date'), category:f.get('category'), amount:Number(f.get('amount')), notes:f.get('notes')
+    });
+    if(error){ alert('Could not log expense: '+error.message); return; }
+    await loadAll(); renderAll();
+  });
+  document.querySelectorAll('[data-del-expense]').forEach(b=>b.addEventListener('click', async ()=>{
+    const { error } = await supabaseClient.from('expenses').delete().eq('id', b.dataset.delExpense);
+    if(error){ alert('Could not delete expense: '+error.message); return; }
+    await loadAll(); renderAll();
+  }));
+
+  // Investment
+  const invForm = document.getElementById('investForm');
+  if(invForm) invForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const f = new FormData(invForm);
+    const { error } = await supabaseClient.from('investments').insert({
+      date:f.get('date'), type:f.get('type'), amount:Number(f.get('amount')),
+      source:f.get('source'), notes:f.get('notes')
+    });
+    if(error){ alert('Could not log entry: '+error.message); return; }
+    await loadAll(); renderAll();
+  });
+  document.querySelectorAll('[data-del-invest]').forEach(b=>b.addEventListener('click', async ()=>{
+    const { error } = await supabaseClient.from('investments').delete().eq('id', b.dataset.delInvest);
+    if(error){ alert('Could not delete entry: '+error.message); return; }
+    await loadAll(); renderAll();
+  }));
+
+  // Targets
+  const tForm = document.getElementById('targetsForm');
+  if(tForm) tForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const f = new FormData(tForm);
+    TARGETS = {
+      dailyNetProfit:Number(f.get('dailyNetProfit')),
+      monthlyNetProfit:Number(f.get('monthlyNetProfit')),
+      annualNetProfit:Number(f.get('annualNetProfit')),
+      targetMarkupPercent:Number(f.get('targetMarkupPercent')),
+      avgItemsPerDay:Number(f.get('avgItemsPerDay')),
+    };
+    await saveTargets(); renderAll();
+  });
+
+  // Advisor
+  const askBtn = document.getElementById('askAiBtn');
+  if(askBtn) askBtn.addEventListener('click', askAI);
+}
+
+/* ============ AUTH ============ */
+let AUTH_MODE = 'signin';
+
+function renderUserBox(){
+  const box = document.getElementById('userBox');
+  if(!box || !CURRENT_USER) return;
+  box.innerHTML = `<span>${CURRENT_USER.email}</span><button class="btn ghost small" id="signOutBtn">Sign Out</button>`;
+  document.getElementById('signOutBtn').addEventListener('click', async ()=>{
+    await supabaseClient.auth.signOut();
+  });
+}
+
+function showAuthScreen(){
+  document.getElementById('authScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+function showApp(){
+  document.getElementById('authScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+function attachAuthHandlers(){
+  const authForm = document.getElementById('authForm');
+  const authToggleBtn = document.getElementById('authToggleBtn');
+  const authSubmitBtn = document.getElementById('authSubmitBtn');
+  const authError = document.getElementById('authError');
+  const authNote = document.getElementById('authNote');
+
+  authToggleBtn.addEventListener('click', ()=>{
+    AUTH_MODE = AUTH_MODE==='signin' ? 'signup' : 'signin';
+    authSubmitBtn.textContent = AUTH_MODE==='signin' ? 'Sign In' : 'Sign Up';
+    authToggleBtn.textContent = AUTH_MODE==='signin' ? 'Need an account? Sign Up' : 'Already have an account? Sign In';
+    authError.style.display = 'none';
+    authNote.style.display = 'none';
+  });
+
+  authForm.addEventListener('submit', async e=>{
+    e.preventDefault();
+    authError.style.display = 'none';
+    authNote.style.display = 'none';
+    const f = new FormData(authForm);
+    const email = f.get('email'), password = f.get('password');
+    authSubmitBtn.disabled = true;
+    try{
+      if(AUTH_MODE==='signin'){
+        const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+        if(error) throw error;
+      } else {
+        const { error } = await supabaseClient.auth.signUp({ email, password });
+        if(error) throw error;
+        authNote.textContent = 'Account created — check your email to confirm, then sign in.';
+        authNote.style.display = 'block';
+      }
+    } catch(err){
+      authError.textContent = err.message || 'Something went wrong.';
+      authError.style.display = 'block';
+    }
+    authSubmitBtn.disabled = false;
+  });
+}
+
+async function handleSignedIn(user){
+  CURRENT_USER = user;
+  showApp();
+  renderUserBox();
+  document.getElementById('panels').innerHTML = `<div class="panel active"><div class="empty">Loading your data…</div></div>`;
+  await loadAll();
+  renderAll();
+}
+
+/* ============ INIT ============ */
+(async function init(){
+  attachAuthHandlers();
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if(session && session.user){
+    await handleSignedIn(session.user);
+  } else {
+    showAuthScreen();
+  }
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
+    if(event === 'SIGNED_IN' && session && session.user){
+      await handleSignedIn(session.user);
+    } else if(event === 'SIGNED_OUT'){
+      CURRENT_USER = null;
+      DB = { purchases:[], inventory:[], sales:[], salary:[], expenses:[], investments:[] };
+      showAuthScreen();
+    }
+  });
+})();
+</script>
+</body>
+</html>
